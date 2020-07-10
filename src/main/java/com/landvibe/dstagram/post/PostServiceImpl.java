@@ -3,16 +3,10 @@ package com.landvibe.dstagram.post;
 import com.landvibe.dstagram.post.model.Post;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class PostServiceImpl implements PostService {
-
-    private Map<Integer, Post> cachedPosts = new HashMap<>();
 
     private PostRepository postRepository;
 
@@ -20,32 +14,24 @@ public class PostServiceImpl implements PostService {
         this.postRepository = postRepository;
     }
 
+    @Override
     public List<Post> getPosts() {
-        return new ArrayList<>(cachedPosts.values());
+        return this.postRepository.findAll();
     }
 
     @Override
     public Post createPost(Post post) {
-        LocalDateTime createdTime = LocalDateTime.now();
-        post.setCreated(createdTime);
-        post.setUpdated(createdTime);
-
-        if (cachedPosts.containsKey(post.getId())) {
+        if (this.postRepository.findById(post.getId()).isPresent()) {
             throw new RuntimeException("This post already exists: " + post.getId());
         } else {
-            cachedPosts.put(post.getId(), post);
-            return post;
+            return this.postRepository.save(post);
         }
     }
 
     @Override
     public Post updatePost(int id, Post post) {
-        LocalDateTime updatedTime = LocalDateTime.now();
-        post.setUpdated(updatedTime);
-        post.setId(id);
-
-        if (cachedPosts.containsKey(post.getId())) {
-            return cachedPosts.put(id, post);
+        if (this.postRepository.findById(id).isPresent()) {
+            return this.postRepository.save(post);
         } else {
             throw new RuntimeException("Not found post: " + id);
         }
@@ -53,8 +39,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(int id) {
-        if (cachedPosts.containsKey(id)) {
-            cachedPosts.remove(id);
+        if (this.postRepository.findById(id).isPresent()) {
+            this.postRepository.deleteById(id);
         } else {
             throw new RuntimeException("Not found post: " + id);
         }
