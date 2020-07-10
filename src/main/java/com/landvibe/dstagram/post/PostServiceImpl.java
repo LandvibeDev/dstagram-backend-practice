@@ -14,7 +14,10 @@ public class PostServiceImpl implements PostService {
 
     private Map<Integer, Post> cachedPosts = new HashMap<>();
 
-    public PostServiceImpl() {
+    private PostRepository postRepository;
+
+    public PostServiceImpl(PostRepository postRepository) {
+        this.postRepository = postRepository;
     }
 
     public List<Post> getPosts() {
